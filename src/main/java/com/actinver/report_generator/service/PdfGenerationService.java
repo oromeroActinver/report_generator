@@ -24,8 +24,10 @@ import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.TextAnchor;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.actinver.report_generator.dto.DatosReporteAlphaDTO;
 import com.actinver.report_generator.model.ClientData;
 import com.actinver.report_generator.model.PerformanceData;
 import com.actinver.report_generator.model.PortfolioData;
@@ -49,6 +51,19 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 @Service
 public class PdfGenerationService {
+
+	@Autowired
+	private PaginaUnoService paginaUnoService;
+	@Autowired
+	private PaginaDosService paginaDosService;
+	@Autowired
+	private PaginaTresService paginaTresService;
+	@Autowired
+	private PaginaCuatroService paginaCuatroService;
+	@Autowired
+	private PaginaCincoService paginaCincoService;
+	@Autowired
+	private PaginaSeisService paginaSeisService;
 
 	private static final Font TITLE_FONT = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
 	private static final Font SUBTITLE_FONT = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD);
@@ -503,9 +518,9 @@ public class PdfGenerationService {
 
 		// Gráfica con colores personalizados
 		JFreeChart chart = createPerformanceChart(performance);
-		//int width = 500;
-		//int height = 250;
-		int width = 600;  // Aumenta la resolución
+		// int width = 500;
+		// int height = 250;
+		int width = 600; // Aumenta la resolución
 		int height = 380;
 		ByteArrayOutputStream chartOutputStream = new ByteArrayOutputStream();
 		org.jfree.chart.ChartUtils.writeChartAsPNG(chartOutputStream, chart, width, height);
@@ -627,8 +642,10 @@ public class PdfGenerationService {
 			dataset.addValue(performance.getBenchmarkMonthlyReturns().get(cat), "Benchmark", cat);
 			dataset.addValue(performance.getPortfolioMonthlyReturns().get(cat), "Portafolio", cat);
 
-			//dataset.addValue(performance.getBenchmarkMonthlyReturns().get(cat) * 100, "Benchmark", cat);
-			//dataset.addValue(performance.getPortfolioMonthlyReturns().get(cat) * 100, "Portafolio", cat);
+			// dataset.addValue(performance.getBenchmarkMonthlyReturns().get(cat) * 100,
+			// "Benchmark", cat);
+			// dataset.addValue(performance.getPortfolioMonthlyReturns().get(cat) * 100,
+			// "Portafolio", cat);
 		}
 
 		// Crear gráfico de barras sin 3D
@@ -1002,6 +1019,43 @@ public class PdfGenerationService {
 		disclaimerParagraph.setIndentationLeft(60); // Margen izquierdo de 60pt
 		disclaimerParagraph.setIndentationRight(70); // Margen derecho de 60pt
 		document.add(disclaimerParagraph);
+	}
+
+	public byte[] generarReporte(DatosReporteAlphaDTO datosReporte) throws DocumentException {
+		// Cambiar a PageSize.A4.rotate() para orientación horizontal
+		Document document = new Document(PageSize.A4.rotate());
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+		// 2. Asigna a la variable de clase usando this.writer
+		this.writer = PdfWriter.getInstance(document, outputStream);
+
+		try {
+			document.open();
+			paginaUnoService.addFirstPage(document, this.writer);
+			document.newPage();
+			paginaDosService.addPortfolioDataPage(document, this.writer, datosReporte);
+			document.newPage();
+			paginaTresService.addPerformancePage(document, this.writer, datosReporte);
+			document.newPage();
+			paginaCuatroService.addDepositsWithdrawalsPage(document, this.writer, datosReporte.getDatosMovimientosDTO(),
+					datosReporte.getAnual());
+			document.newPage();
+			paginaCincoService.addExplanationPage(document, this.writer, datosReporte.getTextSlite5(),
+					datosReporte.getEstrategia());
+			document.newPage();
+			paginaSeisService.addFooterPage(document, this.writer);
+			document.close();
+
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return outputStream.toByteArray();
+
 	}
 
 }

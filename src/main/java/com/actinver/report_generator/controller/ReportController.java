@@ -2,15 +2,21 @@ package com.actinver.report_generator.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.actinver.report_generator.dto.DatosReporteAlphaDTO;
 import com.actinver.report_generator.service.PdfGenerationService;
 import com.actinver.report_generator.service.ReportDataService;
+import com.itextpdf.text.DocumentException;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -41,6 +47,18 @@ public class ReportController {
             .headers(headers)
             .contentType(MediaType.APPLICATION_PDF)
             .body(pdfBytes);
+    }
+    
+    @PostMapping("/generar-pdf")
+    public ResponseEntity<byte[]> generarPDF(@RequestBody DatosReporteAlphaDTO datos) throws DocumentException {
+        // Aquí generas el PDF como byte[]
+        byte[] pdfBytes = pdfGenerationService.generarReporte(datos);
+ 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=investment_report.pdf");
+ 
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
 
 }
