@@ -1,5 +1,9 @@
 package com.actinver.report_generator.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
 import org.springframework.stereotype.Service;
 
 import com.itextpdf.text.BaseColor;
@@ -19,104 +23,88 @@ import com.itextpdf.text.pdf.PdfWriter;
 public class PaginaUnoService {
 
 	// HOJA 1
-	public void addFirstPage(Document document, PdfWriter writer) {
+	public boolean addFirstPage(Document document, PdfWriter writer, String anual, String fechaFinElaboracion) {
+	    try {
+	        PdfContentByte canvas = writer.getDirectContentUnder();
+	        canvas.saveState();
+	        canvas.setColorFill(new BaseColor(0x1a, 0x22, 0x49));
 
-		PdfContentByte canvas = writer.getDirectContentUnder();
-		canvas.saveState();
-		canvas.setColorFill(new BaseColor(0x1a, 0x22, 0x49));
+	        float imageWidth = PageSize.A4.rotate().getWidth() * 0.6f;
+	        float fondoHeight = PageSize.A4.rotate().getHeight() * 0.8f;
+	        canvas.rectangle(10, 60, imageWidth, fondoHeight);
+	        canvas.fill();
+	        canvas.restoreState();
 
-		float imageWidth = PageSize.A4.rotate().getWidth() * 0.6f;
-		float fondoHeight = PageSize.A4.rotate().getHeight() * 0.8f;
-		float fondoX = PageSize.A4.rotate().getWidth() - imageWidth;
-		float fondoY = (PageSize.A4.rotate().getHeight() - fondoHeight) / 2;
+	        try {
+	            Image image1 = Image.getInstance("src/main/resources/static/image1.jpeg");
+	            image1.scaleAbsolute(imageWidth, fondoHeight);
+	            float image1X = 325;
+	            float image1Y = 60;
+	            image1.setAbsolutePosition(image1X, image1Y);
+	            document.add(image1);
 
-		canvas.rectangle(10, 60, imageWidth, fondoHeight);
-		canvas.fill();
-		canvas.restoreState();
+	            try {
+	                Image image4 = Image.getInstance("src/main/resources/static/image1.png");
+	                float image4Size = imageWidth * 0.8f;
+	                image4.scaleToFit(image4Size, image4Size);
+	                float image4X = image1X + imageWidth - image4.getScaledWidth();
+	                image4.setAbsolutePosition(image4X, image1Y);
+	                document.add(image4);
+	            } catch (Exception e) {
+	                System.err.println("Error al cargar image4.png: " + e.getMessage());
+	            }
+	        } catch (Exception e) {
+	            System.err.println("Error al cargar image1.jpeg: " + e.getMessage());
+	        }
 
-		try {
-			Image image1 = Image.getInstance("src/main/resources/static/image1.jpeg");
-			image1.scaleAbsolute(imageWidth, fondoHeight);
-			float image1X = 325;
-			float image1Y = 60;
+	        try {
+	            Image image3 = Image.getInstance("src/main/resources/static/image3.png");
+	            float logoWidth = PageSize.A4.rotate().getWidth() * 0.3f;
+	            float logoHeight = logoWidth * 0.20f;
+	            image3.scaleAbsolute(logoWidth, logoHeight);
+	            float logoX = 40;
+	            float logoY = 100;
+	            image3.setAbsolutePosition(logoX, logoY);
+	            document.add(image3);
+	        } catch (Exception e) {
+	            Paragraph logoText = new Paragraph("ACTINVER\nAsset Management",
+	                    new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLACK));
+	            logoText.setAlignment(Element.ALIGN_LEFT);
+	            ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_LEFT, logoText, 40, 40, 0);
+	        }
 
-			image1.setAbsolutePosition(image1X, image1Y);
-			document.add(image1);
+	        Font whiteFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.WHITE);
+	        Font titleFont = new Font(Font.FontFamily.HELVETICA, 32, Font.BOLD, BaseColor.WHITE);
 
-			try {
-				Image image4 = Image.getInstance("src/main/resources/static/image1.png");
+	        Paragraph title = new Paragraph("Soluciones\nAlpha " + anual, titleFont);
+	        title.setAlignment(Element.ALIGN_LEFT);
+	        title.setIndentationLeft(20);
+	        title.setSpacingBefore(100);
 
-				// Tamaño aumentado (25% del ancho de image1)
-				float image4Size = imageWidth * 0.8f;
-				image4.scaleToFit(image4Size, image4Size);
-				// Posición dentro de image1 (esquina inferior derecha)
-				float image4X = image1X + imageWidth - image4.getScaledWidth();
-				image4.setAbsolutePosition(image4X, image1Y);
-				document.add(image4);
+	        document.add(title);
+	        document.add(Chunk.NEWLINE);
 
-			} catch (Exception e) {
-				System.err.println("Error al cargar image4.png: " + e.getMessage());
-			}
-		} catch (Exception e) {
-			System.err.println("Error al cargar image1.jpeg: " + e.getMessage());
-		}
+	        Paragraph subtitle = new Paragraph("Dirección de Asset Management", whiteFont);
+	        subtitle.setIndentationLeft(20);
+	        document.add(subtitle);
 
-		try {
-			Image image3 = Image.getInstance("src/main/resources/static/image3.png");
+	        DateTimeFormatter entrada = DateTimeFormatter.ofPattern("yyyyMMdd");
+	        LocalDate fecha = LocalDate.parse(fechaFinElaboracion, entrada);
+	        DateTimeFormatter salida = DateTimeFormatter.ofPattern("d 'de' MMMM 'del' yyyy", new Locale("es", "ES"));
+	        String fechaFormateada = fecha.format(salida);
 
-			// Tamaño aumentado (20% del ancho de página)
-			float logoWidth = PageSize.A4.rotate().getWidth() * 0.3f;
-			float logoHeight = logoWidth * 0.20f; // Mantener relación de aspecto ~3:1
+	        Paragraph date = new Paragraph("Fecha de elaboración: " + fechaFormateada, whiteFont);
+	        date.setIndentationLeft(20);
+	        document.add(date);
+	        document.add(Chunk.NEWLINE);
+	        document.add(Chunk.NEWLINE);
 
-			image3.scaleAbsolute(logoWidth, logoHeight);
-
-			float logoX = 40; // Margen izquierdo
-			float logoY = 100; // Margen inferior
-
-			image3.setAbsolutePosition(logoX, logoY);
-			document.add(image3);
-		} catch (Exception e) {
-			// Texto alternativo también en posición inferior izquierda
-			Paragraph logoText = new Paragraph("ACTINVER\nAsset Management",
-					new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLACK));
-			logoText.setAlignment(Element.ALIGN_LEFT);
-
-			// Posicionar el texto en la parte inferior izquierda
-			ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_LEFT, logoText, 40, 40, // Y position
-																										// (from bottom)
-					0);
-		}
-
-		// 5. Contenido de texto (sobre el fondo azul)
-		Font whiteFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.WHITE);
-		Font titleFont = new Font(Font.FontFamily.HELVETICA, 32, Font.BOLD, BaseColor.WHITE);
-
-		// Título principal
-		Paragraph title = new Paragraph("Soluciones\nAlpha 2025", titleFont);
-		title.setAlignment(Element.ALIGN_LEFT);
-		title.setIndentationLeft(20);
-		title.setSpacingBefore(100);
-		try {
-			document.add(title);
-			document.add(Chunk.NEWLINE);
-
-			// Subtítulo
-			Paragraph subtitle = new Paragraph("Dirección de Asset Management", whiteFont);
-			subtitle.setIndentationLeft(20);
-			document.add(subtitle);
-
-			// Fecha
-			Paragraph date = new Paragraph("Fecha de elaboración: 28 de febrero del 2025", whiteFont);
-			date.setIndentationLeft(20);
-			document.add(date);
-
-			document.add(Chunk.NEWLINE);
-			document.add(Chunk.NEWLINE);
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+	        return true; // Éxito
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return false; // Fallo
+	    }
 	}
+
 
 }

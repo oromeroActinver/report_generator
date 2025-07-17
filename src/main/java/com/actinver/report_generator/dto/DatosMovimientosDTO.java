@@ -5,7 +5,8 @@ import lombok.Data;
 @Data
 public class DatosMovimientosDTO {
 
-	private String mes;
-    private double deposito;
-    private double retiro;
+	private String tipo;
+	private Integer mes;
+    private double importe;
+    
 }

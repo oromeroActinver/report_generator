@@ -2,12 +2,10 @@ package com.actinver.report_generator.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,34 +29,24 @@ public class ReportController {
         this.reportDataService = reportDataService;
         
     }
-
-    @GetMapping(value = "/investment", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> generateInvestmentReport() throws Exception {
-        byte[] pdfBytes = pdfGenerationService.generateReport(
-            reportDataService.getClientData(),
-            reportDataService.getPortfolioData(),
-            reportDataService.getPerformanceData()
-        );
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=investment_report.pdf");
-
-        return ResponseEntity.ok()
-            .headers(headers)
-            .contentType(MediaType.APPLICATION_PDF)
-            .body(pdfBytes);
-    }
     
     @PostMapping("/generar-pdf")
-    public ResponseEntity<byte[]> generarPDF(@RequestBody DatosReporteAlphaDTO datos) throws DocumentException {
-        // Aquí generas el PDF como byte[]
+    public ResponseEntity<?> generarPDF(@RequestBody DatosReporteAlphaDTO datos) throws DocumentException {
         byte[] pdfBytes = pdfGenerationService.generarReporte(datos);
- 
+
+        if (pdfBytes == null) {
+            // Error al generar el PDF
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("No se generó el PDF. Ocurrieron errores durante la creación del documento.");
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=investment_report.pdf");
- 
+
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
+
 
 }

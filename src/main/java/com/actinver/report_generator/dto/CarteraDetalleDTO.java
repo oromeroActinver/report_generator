@@ -6,6 +6,6 @@ import lombok.Data;
 public class CarteraDetalleDTO {
 	
 	private String descripcion;
-	private Long porcentaje;
+	private Double porcentaje;
 
 }
