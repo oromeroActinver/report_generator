@@ -2,6 +2,7 @@ package com.actinver.report_generator.service;
 
 import org.springframework.stereotype.Service;
 
+import com.actinver.report_generator.dto.DatosReporteAlphaDTO;
 import com.actinver.report_generator.model.*;
 
 import java.util.HashMap;
@@ -9,6 +10,10 @@ import java.util.Map;
 
 @Service
 public class ReportDataService {
+	
+	public DatosReporteAlphaDTO getDatos() {
+		return null;
+	}
 	
 	public String getAño() {
 		return "2025";
@@ -53,6 +58,7 @@ public class ReportDataService {
         portfolio.setContractNumber("5333542");
         portfolio.setSolutionType("PATRIMONIAL");
         portfolio.setStartDate("25/mar/2022");
+        
         portfolio.setDebtPercentage(77.37);
         portfolio.setCorporatePercentage(10.01);
         portfolio.setDebtFundsPercentage(41.95);
