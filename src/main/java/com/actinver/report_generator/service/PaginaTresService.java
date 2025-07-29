@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +28,7 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.TextAnchor;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.actinver.report_generator.dto.DatosGraficaDTO;
@@ -51,10 +53,14 @@ import com.itextpdf.text.pdf.PdfWriter;
 @Service
 public class PaginaTresService {
 
+	@Autowired
+	private ReportDataService reportDataService;
+
 	private static final Font NORMAL_FONT = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL);
 	private static final Font BOLD_FONT = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD);
 
 	// TERCER HOJA DEL SLITE ALPHA
+	@SuppressWarnings("static-access")
 	public Boolean addPerformancePage(Document document, PdfWriter writer, DatosReporteAlphaDTO datosReporte)
 			throws DocumentException, IOException {
 
@@ -98,7 +104,9 @@ public class PaginaTresService {
 			document.add(titleTable);
 
 			try {
-				Image image7 = Image.getInstance("src/main/resources/static/image7.png");
+				// Image image7 = Image.getInstance("src/main/resources/static/image7.png");
+				InputStream imageStream7 = getClass().getClassLoader().getResourceAsStream("static/image7.png");
+				Image image7 = Image.getInstance(reportDataService.toByteArray(imageStream7));
 				image7.scalePercent(35f);
 				image7.setAbsolutePosition(10, PageSize.A4.rotate().getHeight() - image7.getScaledHeight() - 30);
 				writer.getDirectContentUnder().addImage(image7);
@@ -279,7 +287,9 @@ public class PaginaTresService {
 			ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_LEFT, disclaimer, leftMargin, footerY,
 					0);
 			try {
-				Image image6 = Image.getInstance("src/main/resources/static/image6.png");
+				// Image image6 = Image.getInstance("src/main/resources/static/image6.png");
+				InputStream imageStream6 = getClass().getClassLoader().getResourceAsStream("static/image6.png");
+				Image image6 = Image.getInstance(reportDataService.toByteArray(imageStream6));
 				image6.scaleToFit(200, 200);
 				image6.setAbsolutePosition(rightMargin - image6.getScaledWidth(),
 						footerY - (image6.getScaledHeight() / 2) + 5 // Ajuste fino de altura
@@ -339,16 +349,6 @@ public class PaginaTresService {
 				}
 			}
 		}
-
-		/*
-		 * for (String cat : categorias) { for (DatosGraficaDTO dato : datosGrafica) {
-		 * String mes = dato.getMes(); String categoriaActual = mes.equals("Año Ant") ?
-		 * datosReporteAlphaDTO.getFechaInicioAlpha().substring(0, 4) : mes;
-		 * 
-		 * if (categoriaActual.equals(cat)) { dataset.addValue(dato.getBenchmark() *
-		 * 100, "Benchmark", cat); dataset.addValue(dato.getPortafolio() * 100,
-		 * "Portafolio", cat); break; } } }
-		 */
 
 		JFreeChart chart = ChartFactory.createBarChart(null, null, null, dataset, PlotOrientation.VERTICAL, true, true,
 				false);

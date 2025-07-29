@@ -1,5 +1,8 @@
 package com.actinver.report_generator.service;
 
+import java.io.InputStream;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.itextpdf.text.BaseColor;
@@ -15,6 +18,12 @@ import com.itextpdf.text.pdf.PdfWriter;
 @Service
 public class PaginaSeisService {
 	
+	@Autowired
+	private ReportDataService reportDataService;
+	
+	
+	
+	@SuppressWarnings("static-access")
 	public boolean addFooterPage(Document document, PdfWriter writer) {
 	    try {
 	        // Configuración de márgenes
@@ -35,7 +44,9 @@ public class PaginaSeisService {
 	        BaseColor whiteColor = new BaseColor(255, 255, 255);
 
 	        try {
-	            Image image4 = Image.getInstance("src/main/resources/static/image1.png");
+	            //Image image4 = Image.getInstance("src/main/resources/static/image1.png");
+	            InputStream imageStream4 = getClass().getClassLoader().getResourceAsStream("static/image1.png");
+	        	Image image4 = Image.getInstance(reportDataService.toByteArray(imageStream4));
 	            image4.scaleToFit(380, 245);
 	            float image4X = document.getPageSize().getWidth() - image4.getScaledWidth() - horizontalMargin;
 	            float image4Y = bottomMargin;
@@ -46,7 +57,9 @@ public class PaginaSeisService {
 	        }
 
 	        try {
-	            Image image8 = Image.getInstance("src/main/resources/static/image8.png");
+	            //Image image8 = Image.getInstance("src/main/resources/static/image8.png");
+	            InputStream imageStream8 = getClass().getClassLoader().getResourceAsStream("static/image8.png");
+	        	Image image8 = Image.getInstance(reportDataService.toByteArray(imageStream8));
 	            image8.scaleToFit(487.9f, 103.9f);
 	            float image8X = (document.getPageSize().getWidth() - image8.getScaledWidth()) / 2;
 	            float image8Y = (document.getPageSize().getHeight() - image8.getScaledHeight()) / 2;

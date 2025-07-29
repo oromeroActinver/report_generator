@@ -1,9 +1,8 @@
 package com.actinver.report_generator.service;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
-import java.text.AttributedString;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -16,12 +15,10 @@ import java.util.Map;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.labels.PieSectionLabelGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
-import org.jfree.chart.plot.PieLabelLinkStyle;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.general.PieDataset;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.actinver.report_generator.dto.CarteraDetalleDTO;
@@ -45,12 +42,18 @@ import com.itextpdf.text.pdf.PdfWriter;
 @Service
 public class PaginaDosService {
 
+	@Autowired
+	private ReportDataService reportDataService;
+
 	private static final Font NORMAL_FONT = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL);
 
+	@SuppressWarnings("static-access")
 	public boolean addPortfolioDataPage(Document document, PdfWriter writer, DatosReporteAlphaDTO datosReporte) {
 		try {
 			try {
-				Image image5 = Image.getInstance("src/main/resources/static/image5.png");
+				// Image image5 = Image.getInstance("src/main/resources/static/image5.png");
+				InputStream imageStream5 = getClass().getClassLoader().getResourceAsStream("static/image5.png");
+				Image image5 = Image.getInstance(reportDataService.toByteArray(imageStream5));
 				float imgWidth = 140;
 				float imgHeight = PageSize.A4.rotate().getHeight() * 0.75f;
 				image5.scaleAbsolute(imgWidth, imgHeight);
@@ -154,7 +157,9 @@ public class PaginaDosService {
 			document.add(tableContainer);
 
 			try {
-				Image image6 = Image.getInstance("src/main/resources/static/image6.png");
+				//Image image6 = Image.getInstance("src/main/resources/static/image6.png");
+				InputStream imageStream6 = getClass().getClassLoader().getResourceAsStream("static/image6.png");
+				Image image6 = Image.getInstance(reportDataService.toByteArray(imageStream6));
 				image6.scaleToFit(200, 200);
 				float rightMargin = PageSize.A4.rotate().getWidth() - 30;
 				float footerY = 70;
